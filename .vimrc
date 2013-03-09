@@ -7,3 +7,4 @@ set list listchars=tab:»»,trail:·
 set incsearch
 set fillchars=fold:⋯
 autocmd BufRead,BufNewFile *.elm setlocal filetype=haskell
+call pathogen#infect()
