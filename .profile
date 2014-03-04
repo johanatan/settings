@@ -6,7 +6,6 @@ alias masch='cd /Users/jonathan/Documents/SourceCode/extempore_maschine'
 alias hibernateon="sudo pmset -a hibernatemode 25"
 alias hibernateoff="sudo pmset -a hibernatemode 3"
 alias src='cd /Users/jonathan/Documents/SourceCode'
-alias ca='src;cd clinkle/clinkle-api'
 alias ijulia="ipython notebook --profile=julia"
 alias julia="/Applications/Julia-*.app/Contents/Resources/julia/bin/julia"
 alias first="head -n 1"
