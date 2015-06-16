@@ -2,10 +2,10 @@ alias ls='ls -laG'
 alias lw='ls2 -G'
 alias ..='cd ..'
 alias ...='cd ..;cd ..'
-alias masch='cd /Users/jonathan/Documents/SourceCode/extempore_maschine'
+alias masch="cd /Users/$(whoami)/Documents/SourceCode/extempore_maschine"
 alias hibernateon="sudo pmset -a hibernatemode 25"
 alias hibernateoff="sudo pmset -a hibernatemode 3"
-alias src='cd /Users/jonathan/Documents/SourceCode'
+alias src="cd /Users/$(whoami)/Documents/SourceCode"
 alias ijulia="ipython notebook --profile=julia"
 alias julia="/Applications/Julia-*.app/Contents/Resources/julia/bin/julia"
 alias first="head -n 1"
