@@ -374,7 +374,6 @@ before packages are loaded. If you are unsure, you should try in setting them in
                       (set-frame-width frame 119)
                       (set-frame-height frame 83)))
           (set-pos (lambda (frame x y) (set-frame-position frame x y))))
-
       (-map-indexed (lambda (index frame)
                       (funcall set-size frame)
                       (funcall set-pos frame (- 1709 (* index 851)) 25)) (reverse frames)))))
