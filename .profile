@@ -32,10 +32,5 @@ shopt -s histappend
 
 [[ -s ~/.bashrc ]] && source ~/.bashrc
 
-pushd $HOME/Documents/SourceCode/FStar > /dev/null
-source setenv.sh
-popd > /dev/null
-
-
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH=$PATH:$HOME/.rvm/bin
