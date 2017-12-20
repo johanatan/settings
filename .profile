@@ -17,14 +17,11 @@ alias gpfhm="git push -f heroku master"
 PATH=/usr/local/scheme/bin:/usr/local/bin:/usr/local/sbin:$PATH
 PATH=/usr/local/mysql/bin:/opt/local/bin:/opt/local/sbin:/usr/local/mongodb/bin:$PATH
 PATH=$HOME/bin:$PATH
-PATH=$HOME/Documents/SourceCode/MustWin/gopath/bin:$PATH
-export PATH=$HOME/activator:$PATH
-
-export GOPATH=$HOME/Documents/SourceCode/MustWin/gopath
-export GOROOT=/usr/local/Cellar/go/1.6.2/libexec
-export CONSUL_EXEC_FILEPATH=$GOPATH/src/github.com/hashicorp/consul/bin/consul
+PATH=$HOME/activator:$PATH
+PATH=$HOME/Library/Python/2.7/bin:$PATH
 
 export CLICOLOR=1
+export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig:$PKG_CONFIG_PATH
 export EDITOR=vim
 
@@ -35,11 +32,10 @@ shopt -s histappend
 
 [[ -s ~/.bashrc ]] && source ~/.bashrc
 
-#pushd /usr/local/Cellar/fstar/0.9.2.0 > /dev/null
 pushd $HOME/Documents/SourceCode/FStar > /dev/null
 source setenv.sh
 popd > /dev/null
 
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
+export PATH=$PATH:$HOME/.rvm/bin
