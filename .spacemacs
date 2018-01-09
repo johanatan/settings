@@ -108,20 +108,6 @@ before layers configuration.
 You should not put any user code in there besides modifying the variable
 values."
 
-  ;; add lib/ and config/ dirs to search paths
-  (add-to-list 'load-path "~/.emacs.d/lib")
-  (add-to-list 'load-path "~/.emacs.d/config")
-
-  ;; load local-environment file
-  (let ((local-environment-file (locate-file "local-environment.el" load-path)))
-    (when local-environment-file
-      (load-file local-environment-file)))
-
-  ;; load utility functions
-  (let ((util-file (locate-file "util.el" load-path)))
-    (when util-file
-      (load-file util-file)))
-
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
   (setq-default
