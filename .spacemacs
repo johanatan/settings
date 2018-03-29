@@ -364,6 +364,15 @@ before packages are loaded. If you are unsure, you should try in setting them in
                       (funcall set-size frame)
                       (funcall set-pos frame (- 1709 (* index 851)) 25)) (reverse frames)))))
 
+(defun define-last-sexp-eval-as-previous-sexp ()
+  (interactive)
+  (save-excursion
+    (let ((rhs (cider-last-sexp))
+          (_ (clojure-backward-logical-sexp 1))
+          (lhs (cider-last-sexp)))
+      (spacemacs//cider-eval-in-repl-no-focus
+       (concat "(def " lhs rhs ")")))))
+
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
