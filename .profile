@@ -32,6 +32,15 @@ shopt -s histappend
 
 [[ -s ~/.bashrc ]] && source ~/.bashrc
 
+[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
+[ -f /Library/Developer/CommandLineTools/usr/share/git-core/git-completion.bash ] && \
+  . /Library/Developer/CommandLineTools/usr/share/git-core/git-completion.bash
+
+if [ -f "/usr/local/opt/bash-git-prompt/share/gitprompt.sh" ]; then
+  __GIT_PROMPT_DIR="/usr/local/opt/bash-git-prompt/share"
+  source "/usr/local/opt/bash-git-prompt/share/gitprompt.sh"
+fi
+
 export NVM_DIR="$HOME/.nvm"
 . "/usr/local/opt/nvm/nvm.sh"
 
