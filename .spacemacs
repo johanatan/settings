@@ -359,10 +359,8 @@ before packages are loaded. If you are unsure, you should try in setting them in
     (let ((frames (frame-list))
           (set-pos (lambda (frame x y)
                      (let ((params `((left + ,(+ (- (* x (+ 7 (window-pixel-width)))) 1680)) (top + -1415))))
-                       (message "params: %s" params)
                        (modify-frame-parameters frame params)))))
       (-map-indexed (lambda (index frame)
-                      (message "index: %s" index)
                       (funcall set-pos frame index 25)) (reverse frames))
       (modify-all-frames-parameters '((width . 119) (height . 83))))))
 
