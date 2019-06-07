@@ -380,6 +380,94 @@ before packages are loaded. If you are unsure, you should try in setting them in
       (spacemacs//cider-eval-in-repl-no-focus
        (concat "(def " lhs rhs ")")))))
 
+(defun do-file-action-at (filename line column action)
+  (with-temp-file filename
+    (insert-file-contents filename)
+    (save-excursion
+      (evil-goto-line line)
+      (evil-goto-column (- column 1))
+      (funcall action))))
+
+(defun delete-sexp ()
+  (interactive)
+  (delete-region (point) (save-excursion (forward-sexp) (point))))
+
+(defun delete-file-form-at (filename line column)
+  (do-file-action-at filename line column 'delete-sexp))
+
+(defun symbol-at-point ()
+  (interactive)
+  (message (thing-at-point 'symbol 'no-properties)))
+
+(defun list-at-point ()
+  (interactive)
+  (message (thing-at-point 'list 'no-properties)))
+
+(defun sexp-at-point ()
+  (interactive)
+  (message (thing-at-point 'sexp 'no-properties)))
+
+(defun word-at-point ()
+  (interactive)
+  (message (thing-at-point 'word 'no-properties)))
+
+(defun sentence-at-point ()
+  (interactive)
+  (message (thing-at-point 'sentence 'no-properties)))
+
+(defun next-thing (thing)
+  (save-excursion
+    (evil-forward-word-begin)
+    (thing-at-point thing 'no-properties)))
+
+(defun sexp-word-at-point (brace word)
+  (let ((nxt-sexp (next-thing 'sexp)))
+    (and (string-prefix-p brace (thing-at-point 'sexp 'no-properties))
+         (string= nxt-sexp word))))
+
+(defun is-let-binding? ()
+  (interactive)
+  (save-excursion
+    (paxedit-backward-up 2)
+    (sexp-word-at-point "(" "let")))
+
+(defun is-function-arg-binding? ()
+  (interactive)
+  (save-excursion
+    (paxedit-backward-up 2)
+    (or (sexp-word-at-point "(" "defn")
+        (sexp-word-at-point "(" "defn-"))))
+
+(defun is-schema-function-arg-binding? ()
+  (interactive)
+  (save-excursion
+    (paxedit-backward-up 2)
+    (sexp-word-at-point "(" "s/defn")))
+
+(defun is-keys-destructure-binding? ()
+  (interactive)
+  (save-excursion
+    (paxedit-backward-up 2)
+    (sexp-word-at-point "{" ":keys")))
+
+(defun delete-binding ()
+  (interactive)
+  (cond ((is-let-binding?)
+         (delete-sexp)
+         (evil-forward-word-begin)
+         (delete-sexp))
+        ((is-keys-destructure-binding?)
+         (delete-sexp))
+        ((is-function-arg-binding?)
+         (delete-sexp))
+        ((is-schema-function-arg-binding?)
+         (delete-sexp)
+         (evil-forward-word-begin)
+         (delete-sexp)
+         (evil-forward-word-begin)
+         (delete-sexp)
+         (evil-forward-word-begin))))
+
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
