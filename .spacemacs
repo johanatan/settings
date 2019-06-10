@@ -409,58 +409,67 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (interactive)
   (message (thing-at-point 'sentence 'no-properties)))
 
+(defun skip-whitespace ()
+  (skip-chars-forward " \t\n"))
+
 (defun next-thing (thing)
   (save-excursion
     (evil-forward-word-begin)
     (thing-at-point thing 'no-properties)))
 
-(defun sexp-word-at-point (brace word)
+(defun sexp-word-at-point? (brace word)
   (let ((nxt-sexp (next-thing 'sexp)))
     (and (string-prefix-p brace (thing-at-point 'sexp 'no-properties))
          (string= nxt-sexp word))))
 
 (defun is-let-binding? ()
-  (interactive)
   (save-excursion
     (paxedit-backward-up 2)
-    (sexp-word-at-point "(" "let")))
+    (sexp-word-at-point? "(" "let")))
 
 (defun is-function-arg-binding? ()
-  (interactive)
   (save-excursion
     (paxedit-backward-up 2)
-    (or (sexp-word-at-point "(" "defn")
-        (sexp-word-at-point "(" "defn-"))))
-
-(defun is-schema-function-arg-binding? ()
-  (interactive)
-  (save-excursion
-    (paxedit-backward-up 2)
-    (sexp-word-at-point "(" "s/defn")))
+    (or (sexp-word-at-point? "(" "defn")
+        (sexp-word-at-point? "(" "defn-")
+        (sexp-word-at-point? "(" "s/defn"))))
 
 (defun is-keys-destructure-binding? ()
-  (interactive)
   (save-excursion
     (paxedit-backward-up 2)
-    (sexp-word-at-point "{" ":keys")))
+    (or
+     (sexp-word-at-point? "{" ":keys")   ; inconsistent behavior between editor &
+     (sexp-word-at-point? "{" "keys")))) ;  temp-file buffer.
 
 (defun delete-binding ()
   (interactive)
   (cond ((is-let-binding?)
          (delete-sexp)
-         (evil-forward-word-begin)
          (delete-sexp))
         ((is-keys-destructure-binding?)
          (delete-sexp))
         ((is-function-arg-binding?)
+         (delete-sexp)
+         (when (string= ":-" (next-thing 'sexp))
+           (delete-sexp)
+           (delete-sexp)))))
+
+(defun throwaway-binding ()
+  (interactive)
+  (cond ((is-let-binding?)
+         (delete-sexp)
+         (insert "_"))
+        ((is-keys-destructure-binding?)
          (delete-sexp))
-        ((is-schema-function-arg-binding?)
+        ((is-function-arg-binding?)
          (delete-sexp)
-         (evil-forward-word-begin)
-         (delete-sexp)
-         (evil-forward-word-begin)
-         (delete-sexp)
-         (evil-forward-word-begin))))
+         (insert "_"))))
+
+(defun delete-file-binding-at (filename line column)
+  (do-file-action-at filename line column 'delete-binding))
+
+(defun throwaway-file-binding-at (filename line column)
+  (do-file-action-at filename line column 'throwaway-binding))
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
