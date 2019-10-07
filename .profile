@@ -15,11 +15,12 @@ alias gphm="git push heroku master"
 alias gpfhm="git push -f heroku master"
 alias cat='bat'
 
-PATH=/usr/local/scheme/bin:/usr/local/bin:/usr/local/sbin:$PATH
+PATH=/usr/local/scheme/bin:/usr/local/sbin:$PATH
 PATH=/usr/local/mysql/bin:/opt/local/bin:/opt/local/sbin:/usr/local/mongodb/bin:$PATH
 PATH=$HOME/bin:$PATH
 PATH=$HOME/activator:$PATH
 PATH=$HOME/Library/Python/2.7/bin:$PATH
+PATH=/usr/local/bin:$PATH
 
 export CLICOLOR=1
 export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
