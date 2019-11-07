@@ -362,7 +362,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
           (frames (frame-list))
           (set-pos (lambda (frame idx)
                      (let ((params `((left + ,(+ (- (* idx (+ 7 (window-pixel-width)))) x-offset))
-                                     (top + top)
+                                     (top + ,top)
                                      (width . 119)
                                      (height . 83))))
                        (modify-frame-parameters frame params)))))
