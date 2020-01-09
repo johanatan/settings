@@ -1,4 +1,4 @@
-;; -*- mode: emacs-lisp -*-
+;; -*- mode: eacs-lisp -*-
 ;; This file is loaded by Spacemacs at startup.
 ;; It must be stored in your home directory.
 
@@ -71,7 +71,7 @@ values."
             shell-default-height 30
             shell-default-position 'bottom)
      ;; spell-checking
-     ;; syntax-checking
+     syntax-checking
      ;; version-control
      )
    ;; List of additional packages that will be installed without being
@@ -559,6 +559,11 @@ you should place your code here."
 
   ; enable company globally
   (global-company-mode)
+
+  (use-package clojure-mode
+               :ensure t
+               :config
+               (require 'flycheck-clj-kondo))
 
   ; enable flycheck globally
   (global-flycheck-mode)
