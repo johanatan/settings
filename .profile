@@ -14,6 +14,9 @@ alias ccat="pygmentize -O bg=dark"
 alias gphm="git push heroku master"
 alias gpfhm="git push -f heroku master"
 alias cat='bat'
+alias canary='/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary --user-data-dir="$HOME/Library/Application Support/Google/Chrome"'
+alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --disable-web-security --user-data-dir="$HOME/Library/Application Support/Google/Chrome-Canary"'
+alias gbd='git branch | grep -v master | grep -v \* | xargs git branch -D'
 
 PATH=/usr/local/scheme/bin:/usr/local/bin:/usr/local/sbin:$PATH
 PATH=/usr/local/mysql/bin:/opt/local/bin:/opt/local/sbin:/usr/local/mongodb/bin:$PATH
@@ -47,3 +50,9 @@ export NVM_DIR="$HOME/.nvm"
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH=$PATH:$HOME/.rvm/bin
+
+# Source chtf
+if [[ -f /usr/local/share/chtf/chtf.sh ]]; then
+    source "/usr/local/share/chtf/chtf.sh"
+fi
+
