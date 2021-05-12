@@ -22,6 +22,7 @@ PATH=$HOME/activator:$PATH
 PATH=$HOME/Library/Python/2.7/bin:$PATH
 PATH=/usr/local/bin:$PATH
 
+export BASH_SILENCE_DEPRECATION_WARNING=1
 export CLICOLOR=1
 export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig:$PKG_CONFIG_PATH
