@@ -28,6 +28,7 @@ export CLICOLOR=1
 export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
 export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig:$PKG_CONFIG_PATH
 export EDITOR=vim
+export BASH_SILENCE_DEPRECATION_WARNING=1
 
 export HISTCONTROL=ignorespace
 export HISTSIZE=""
