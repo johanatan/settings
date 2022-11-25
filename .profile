@@ -17,12 +17,15 @@ alias cat='bat'
 alias canary='/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary --user-data-dir="$HOME/Library/Application Support/Google/Chrome"'
 alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --disable-web-security --user-data-dir="$HOME/Library/Application Support/Google/Chrome-Canary"'
 alias gbd='git branch | grep -v master | grep -v \* | xargs git branch -D'
+alias figpid="ps aux | grep java | grep figwheel.main |  tr -s ' ' | cut -d ' ' -f 2 | head -n 1"
+alias killfig="sudo kill -9 $(figpid)"
 
 PATH=/usr/local/scheme/bin:/usr/local/bin:/usr/local/sbin:$PATH
 PATH=/usr/local/mysql/bin:/opt/local/bin:/opt/local/sbin:/usr/local/mongodb/bin:$PATH
 PATH=$HOME/bin:$PATH
 PATH=$HOME/activator:$PATH
 PATH=$HOME/Library/Python/2.7/bin:$PATH
+PATH=$HOME/.cargo/bin:$PATH
 
 export CLICOLOR=1
 export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx
@@ -57,3 +60,4 @@ if [[ -f /usr/local/share/chtf/chtf.sh ]]; then
     source "/usr/local/share/chtf/chtf.sh"
 fi
 
+. "$HOME/.cargo/env"
