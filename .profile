@@ -25,6 +25,7 @@ PATH=/usr/local/mysql/bin:/opt/local/bin:/opt/local/sbin:/usr/local/mongodb/bin:
 PATH=$HOME/bin:$PATH
 PATH=$HOME/activator:$PATH
 PATH=$HOME/Library/Python/2.7/bin:$PATH
+PATH=$HOME/Library/Python/3.10/bin:$PATH
 PATH=$HOME/.cargo/bin:$PATH
 
 export CLICOLOR=1
