@@ -424,6 +424,14 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (interactive)
   (message (thing-at-point 'sentence 'no-properties)))
 
+(defun line-at-point ()
+  (interactive)
+  (message (thing-at-point 'line 'no-properties)))
+
+(defun defun-at-point ()
+  (interactive)
+  (message (thing-at-point 'defun 'no-properties)))
+
 (defun skip-whitespace ()
   (skip-chars-forward " \t\n"))
 
