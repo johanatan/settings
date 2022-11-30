@@ -527,6 +527,11 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (evil-beginning-of-line)
   (evil-goto-first-line))
 
+(defun evil-end-of-file ()
+  (interactive)
+  (evil-goto-line)
+  (evil-end-of-line))
+
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
