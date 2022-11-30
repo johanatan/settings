@@ -524,7 +524,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
 
 (defun evil-beginning-of-file ()
   (interactive)
-  (evil-beginning-of-visual-line)
+  (evil-beginning-of-line)
   (evil-goto-first-line))
 
 (defun dotspacemacs/user-config ()
@@ -641,6 +641,7 @@ you should place your code here."
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize))
 
+  (add-hook 'hy-mode-hook 'smartparens-mode)
 )
 
 (defun dotspacemacs/emacs-custom-settings ()
