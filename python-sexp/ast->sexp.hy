@@ -58,7 +58,7 @@
 
 (defclass sexp-dict [dict]
   (defn __repr__ [self]
-    (let [pair-repr (fn [i] (str (drepr (get i 0)) ": " (drepr (get i 1))))]
+    (let [pair-repr (fn [i] (str (drepr (get i 0)) " " (drepr (get i 1))))]
       (str "{" (.join " " (map pair-repr (.items self))) "}"))))
 
 (defn sexp [node]
