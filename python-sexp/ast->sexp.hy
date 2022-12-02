@@ -23,9 +23,8 @@
   (concat (map f seq)))
 
 (defn first [seq]
-  (if (> (len seq) 0)
-    (get seq 0)
-    None))
+  (when (> (len seq) 0)
+    (get seq 0)))
 
 (defn rest [seq]
   (cut seq 1 (len seq)))
@@ -45,21 +44,40 @@
         (if (in (get i 0) keys) [] [i]))
       (.items d))))
 
+(defn str [#* args]
+  (.join "" args))
+
+(defn drepr [v]
+  (if (isinstance v (type "")) (str "\"" v "\"") (repr v)))
+
+(defclass sexp-list [list]
+  (defn __repr__ [self]
+    (if (= 0 (len self))
+        "[]"
+        (str "(" (.join " " (map drepr self)) ")"))))
+
+(defclass sexp-dict [dict]
+  (defn __repr__ [self]
+    (let [pair-repr (fn [i] (str (drepr (get i 0)) ": " (drepr (get i 1))))]
+      (str "{" (.join " " (map pair-repr (.items self))) "}"))))
+
 (defn sexp [node]
   (let [t (type node)
         ignore-fields #{"lineno" "col_offset" "end_lineno" "end_col_offset"}]
-    [t.__name__ (apply (functools.partial dissoc (vars node)) (list ignore-fields))]))
+    (sexp-list
+      [t.__name__
+       (sexp-dict
+         (apply (functools.partial dissoc (vars node)) (list ignore-fields)))])))
 
 (defclass SexpTransformer [ast.NodeTransformer]
   ;; the following is the hy implementation of:
   ;; https://github.com/python/cpython/blob/main/Lib/ast.py#L489-L509
-  ;; which was used in debugging but turned out to be unnecessary
-  #_(defn generic-visit [self node]
+  (defn generic-visit [self node]
     (for [[field old-value] (ast.iter-fields node)]
       (cond
         (isinstance old-value list)
         (let [new-values
-              (list
+              (sexp-list
                 (mapcat identity
                         (hy.pyops.reduce
                           (fn [acc v]
@@ -85,14 +103,6 @@
   (defn visit [self node]
     (.generic-visit self node)
     (sexp node)))
-
-(defn hy-string [joinedstr]
-  (let [parts (map (fn [part]
-                     (if (instance? ast.Str part)
-                         (.s part)
-                         (hy-string part)))
-                   (.values joinedstr))]
-    (apply str parts)))
 
 (when (= __name__ "__main__")
   (print (parse-file (if (= 1 (len sys.argv)) "stdin" (get sys.argv 1)))))
