@@ -523,43 +523,75 @@ before packages are loaded. If you are unsure, you should try in setting them in
     (dotimes (var prefix)
       (join-line 1))))
 
-(defun evil-beginning-of-file ()
-  (interactive)
-  (evil-beginning-of-line)
-  (evil-goto-first-line))
+(defun sp-sexp-opening-brace ()
+  (save-excursion
+    (sp-end-of-sexp)
+    (evil-jump-item)
+    (point)))
 
-(defun evil-end-of-file ()
+(defun sp-sexp-closing-brace ()
+  (save-excursion
+    (paxedit-backward-up 1)
+    (evil-jump-item)
+    (point)))
+
+(defvar sp-op-transient-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "b") 'sp-forward-barf-sexp-and-move-point)
+    (define-key map (kbd "s") 'sp-forward-slurp-sexp-and-move-point)
+    (define-key map (kbd "B") 'sp-backward-barf-sexp-and-move-point)
+    (define-key map (kbd "S") 'sp-backward-slurp-sexp-and-move-point)
+    map))
+
+(defun num-leading-spaces (line)
+  (length (seq-take-while (lambda (c) (= c ?\s)) line)))
+
+(defun sp-forward-op-sexp-and-move-point (f &optional n)
+  (interactive "p")
+  (let ((open (sp-sexp-opening-brace)))
+    (funcall f n)
+    (goto-char open)
+    (evil-jump-item)
+    (set-transient-map sp-op-transient-map)))
+
+(defun column-at-point ()
   (interactive)
-  (evil-goto-line)
-  (evil-end-of-line))
+  (message (number-to-string (current-column))))
+
+(defun sp-backward-op-sexp-and-move-point (f &optional n)
+  (interactive "p")
+  (let* ((closing (sp-sexp-closing-brace))
+         (closing-line (line-number-at-pos closing))
+         (get-leading-spaces (lambda () (save-excursion
+                                          (goto-char closing)
+                                          (num-leading-spaces (line-at-point)))))
+         (leading-spaces (funcall get-leading-spaces))
+         (column (save-excursion
+                   (goto-char closing)
+                   (current-column))))
+    (funcall f n)
+    (let* ((new-leading-spaces (funcall get-leading-spaces)))
+      (with-no-warnings (goto-line closing-line))
+      (evil-beginning-of-line)
+      (evil-forward-char (+ column (- leading-spaces new-leading-spaces)))
+      (sp-beginning-of-sexp))
+    (set-transient-map sp-op-transient-map)))
 
 (defun sp-forward-barf-sexp-and-move-point (&optional n)
   (interactive "p")
-  (let ((open (save-excursion
-                (evil-jump-item)
-                (point))))
-    (sp-forward-barf-sexp n)
-    (goto-char open)
-    (evil-jump-item)
-    (set-transient-map
-     (let ((map (make-sparse-keymap)))
-       (define-key map (kbd "b") 'sp-forward-barf-sexp-and-move-point)
-       (define-key map (kbd "s") 'sp-forward-slurp-sexp-and-move-point)
-       map))))
+  (sp-forward-op-sexp-and-move-point 'sp-forward-barf-sexp n))
 
 (defun sp-forward-slurp-sexp-and-move-point (&optional n)
   (interactive "p")
-  (let ((open (save-excursion
-                (evil-jump-item)
-                (point))))
-    (sp-forward-slurp-sexp n)
-    (goto-char open)
-    (evil-jump-item)
-    (set-transient-map
-     (let ((map (make-sparse-keymap)))
-       (define-key map (kbd "b") 'sp-forward-barf-sexp-and-move-point)
-       (define-key map (kbd "s") 'sp-forward-slurp-sexp-and-move-point)
-       map))))
+  (sp-forward-op-sexp-and-move-point 'sp-forward-slurp-sexp n))
+
+(defun sp-backward-barf-sexp-and-move-point (&optional n)
+  (interactive "p")
+  (sp-backward-op-sexp-and-move-point 'sp-backward-barf-sexp n))
+
+(defun sp-backward-slurp-sexp-and-move-point (&optional n)
+  (interactive "p")
+  (sp-backward-op-sexp-and-move-point 'sp-backward-slurp-sexp n))
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
@@ -598,7 +630,7 @@ you should place your code here."
 
   (define-key evil-normal-state-map (kbd "r") 'brace-replace)
   (define-key evil-normal-state-map (kbd "K") 'join-to-previous)
-  (define-key evil-normal-state-map (kbd "gb") 'evil-beginning-of-file)
+  (define-key evil-normal-state-map (kbd "gg") 'beginning-of-buffer)
 
   (setq-default
     js2-basic-offset 2
@@ -644,6 +676,8 @@ you should place your code here."
   (define-key evil-lisp-state-map (kbd "f") 'paxedit-dissolve)
   (define-key evil-lisp-state-map (kbd "b") 'sp-forward-barf-sexp-and-move-point)
   (define-key evil-lisp-state-map (kbd "s") 'sp-forward-slurp-sexp-and-move-point)
+  (define-key evil-lisp-state-map (kbd "B") 'sp-backward-barf-sexp-and-move-point)
+  (define-key evil-lisp-state-map (kbd "S") 'sp-backward-slurp-sexp-and-move-point)
 
   ;; enable company globally
   (global-company-mode)
