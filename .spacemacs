@@ -546,6 +546,15 @@ before packages are loaded. If you are unsure, you should try in setting them in
 (defun num-leading-spaces (line)
   (length (seq-take-while (lambda (c) (= c ?\s)) line)))
 
+(defun num-leading-braces (line)
+  (let ((remainder (substring line (num-leading-spaces line))))
+    (length (seq-take-while (lambda (c) (memq c '(?\( ?\{ ?\[))) remainder))))
+
+(defun get-line (line)
+  (save-excursion
+    (goto-line line)
+    (thing-at-point 'line 'no-properties)))
+
 (defun sp-forward-op-sexp-and-move-point (f &optional n)
   (interactive "p")
   (let ((open (sp-sexp-opening-brace)))
@@ -556,20 +565,25 @@ before packages are loaded. If you are unsure, you should try in setting them in
 
 (defun sp-backward-op-sexp-and-move-point (f &optional n)
   (interactive "p")
-  (let* ((closing (sp-sexp-closing-brace))
+  (let* ((opening-line (line-number-at-pos (sp-sexp-opening-brace)))
+         (closing (sp-sexp-closing-brace))
          (closing-line (line-number-at-pos closing))
-         (get-leading-spaces (lambda () (save-excursion
-                                          (goto-char closing)
-                                          (num-leading-spaces (line-at-point)))))
-         (leading-spaces (funcall get-leading-spaces))
-         (column (save-excursion
-                   (goto-char closing)
-                   (current-column))))
+         (closing-line-str (get-line closing-line))
+         (indent (num-leading-spaces closing-line-str))
+         (closing-brace-count (num-leading-braces closing-line-str))
+         (column (save-excursion (goto-char closing) (current-column))))
     (funcall f n)
-    (let* ((new-leading-spaces (funcall get-leading-spaces)))
+    (let* ((closing-line-str (get-line closing-line))
+           (new-indent (num-leading-spaces closing-line-str))
+           (new-closing-brace-count (num-leading-braces closing-line-str))
+           (indentation-change (- new-indent indent))
+           (brace-change (- new-closing-brace-count closing-brace-count))
+           (adjustment
+            (cond ((= closing-line opening-line) 0)
+                  (t (+ indentation-change brace-change)))))
       (with-no-warnings (goto-line closing-line))
       (evil-beginning-of-line)
-      (evil-forward-char (+ column (- leading-spaces new-leading-spaces)))
+      (evil-forward-char (+ column adjustment))
       (sp-beginning-of-sexp))
     (set-transient-map sp-op-transient-map)))
 
@@ -609,8 +623,8 @@ you should place your code here."
    ?\} '("{ " . " }"))
 
   (if nil (with-eval-after-load 'clojure-mode
-     (dolist (c (string-to-list ":_-?!#*"))
-       (modify-syntax-entry c "w" clojure-mode-syntax-table))))
+            (dolist (c (string-to-list ":_-?!#*"))
+              (modify-syntax-entry c "w" clojure-mode-syntax-table))))
 
   (if nil
       (add-hook 'clojure-mode-hook #'(lambda ()
