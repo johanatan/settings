@@ -554,10 +554,6 @@ before packages are loaded. If you are unsure, you should try in setting them in
     (evil-jump-item)
     (set-transient-map sp-op-transient-map)))
 
-(defun column-at-point ()
-  (interactive)
-  (message (number-to-string (current-column))))
-
 (defun sp-backward-op-sexp-and-move-point (f &optional n)
   (interactive "p")
   (let* ((closing (sp-sexp-closing-brace))
