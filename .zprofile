@@ -34,16 +34,10 @@ export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig:$PKG_CONFIG_PATH
 export EDITOR=vim
 export BASH_SILENCE_DEPRECATION_WARNING=1
 
-export HISTCONTROL=ignorespace
-export HISTSIZE=""
-export HISTFILESIZE=""
-shopt -s histappend
-
-[[ -s ~/.bashrc ]] && source ~/.bashrc
-
-[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
-[ -f /Library/Developer/CommandLineTools/usr/share/git-core/git-completion.bash ] && \
-  . /Library/Developer/CommandLineTools/usr/share/git-core/git-completion.bash
+HISTFILE=~/.zsh_history
+setopt hist_ignore_space
+HISTSIZE=999999999
+SAVEHIST=$HISTSIZE
 
 if [ -f "/usr/local/opt/bash-git-prompt/share/gitprompt.sh" ]; then
   __GIT_PROMPT_DIR="/usr/local/opt/bash-git-prompt/share"
@@ -51,7 +45,8 @@ if [ -f "/usr/local/opt/bash-git-prompt/share/gitprompt.sh" ]; then
 fi
 
 export NVM_DIR="$HOME/.nvm"
-. "/usr/local/opt/nvm/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH=$PATH:$HOME/.rvm/bin
@@ -61,4 +56,4 @@ if [[ -f /usr/local/share/chtf/chtf.sh ]]; then
     source "/usr/local/share/chtf/chtf.sh"
 fi
 
-. "$HOME/.cargo/env"
+eval "$(/opt/homebrew/bin/brew shellenv)"
