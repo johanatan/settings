@@ -190,7 +190,7 @@ values."
    ;; refer to the DOCUMENTATION.org for more info on how to create your own
    ;; spaceline theme. Value can be a symbol or list with additional properties.
    ;; (default '(spacemacs :separator wave :separator-scale 1.5))
-   dotspacemacs-mode-line-theme '(spacemacs :separator wave :separator-scale 1.5)
+   dotspacemacs-mode-line-theme '(doom) ;; '(spacemacs :separator wave :separator-scale 1.5)
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
@@ -753,6 +753,8 @@ you should place your code here."
     (exec-path-from-shell-initialize))
 
   (smartparens-global-mode 1)
+
+  (doom-modeline-mode 1)
 )
 
 (defun dotspacemacs/emacs-custom-settings ()
