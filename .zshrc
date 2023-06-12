@@ -1,4 +1,3 @@
-
 [ -f ~/.cargo/env ] && source ~/.cargo/env
 
 if type brew &>/dev/null; then
@@ -9,3 +8,7 @@ if type brew &>/dev/null; then
 fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+source /opt/homebrew/share/antigen/antigen.zsh
+antigen bundle zsh-users/zsh-completions
+antigen apply
