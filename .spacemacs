@@ -38,10 +38,9 @@ values."
    dotspacemacs-configuration-layer-path '()
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(
+   '(python
      octave
      csv
-     python
      haskell
      yaml
      sql
@@ -49,8 +48,10 @@ values."
      go
      osx
      javascript
-     clojure
-     scala
+     (clojure :variables
+              clojure-enable-sayid t
+              clojure-enable-clj-refactor t
+              clojure-enable-linters 'clj-kondo)
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -58,7 +59,6 @@ values."
      ;; ----------------------------------------------------------------
      helm
      auto-completion
-     ;; better-defaults
      emacs-lisp
      git
      markdown
@@ -70,20 +70,34 @@ values."
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
-     ;; spell-checking
      syntax-checking
-     ;; version-control
+     tern
+     (tree-sitter :variables
+                  spacemacs-tree-sitter-hl-black-list '(js2-mode rjsx-mode)
+                  tree-sitter-syntax-highlight-enable t
+                  tree-sitter-fold-enable t
+                  tree-sitter-fold-indicators-enable nil)
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(
-                                      fstar-mode
-                                      paredit
-                                      paxedit
+                                      beacon
+                                      (copilot :location (recipe
+                                                          :fetcher github
+                                                          :repo "zerolfx/copilot.el"
+                                                          :files ("*.el" "dist")))
                                       dash
                                       dash-functional
+                                      exec-path-from-shell
+                                      fstar-mode
+                                      general
+                                      hy-mode
+                                      paredit
+                                      paxedit
+                                      tree-edit
+                                      evil-tree-edit
                                       flycheck-clj-kondo
                                       )
    ;; A list of packages that cannot be updated.
@@ -169,12 +183,20 @@ values."
                          leuven
                          monokai
                          zenburn)
+   ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
+   ;; `all-the-icons', `custom', `doom', `vim-powerline' and `vanilla'. The
+   ;; first three are spaceline themes. `doom' is the doom-emacs mode-line.
+   ;; `vanilla' is default Emacs mode-line. `custom' is a user defined themes,
+   ;; refer to the DOCUMENTATION.org for more info on how to create your own
+   ;; spaceline theme. Value can be a symbol or list with additional properties.
+   ;; (default '(spacemacs :separator wave :separator-scale 1.5))
+   dotspacemacs-mode-line-theme '(doom) ;; '(spacemacs :separator wave :separator-scale 1.5)
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
    ;; quickly tweak the mode-line size to make separators look not too crappy.
    dotspacemacs-default-font '("Monaco"
-                               :size 12
+                               :size 10
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -333,7 +355,7 @@ values."
    ;; `trailing' to delete only the whitespace at end of lines, `changed'to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
-   dotspacemacs-whitespace-cleanup nil
+   dotspacemacs-whitespace-cleanup 'all
    ))
 
 (defun brace-replace ()
@@ -362,18 +384,18 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (when (window-system)
     (let* ((num-displays (length (display-monitor-attributes-list)))
           (top (if (= 1 num-displays) 0 -1415))
-          (x-offset (if (= 1 num-displays) 1065 1680))
+          (x-offset (if (= 1 num-displays) 603 1680))
           (frames (frame-list))
           (set-pos (lambda (frame idx)
                      (let ((params `((left + ,(+ (- (* idx (+ 7 (window-pixel-width)))) x-offset))
                                      (top + ,top)
-                                     (width . 119)
-                                     (height . 83))))
+                                     (width . 238)
+                                     (height . 90))))
                        (modify-frame-parameters frame params)))))
       (-map-indexed (lambda (index frame)
                       (funcall set-pos frame index)) (reverse frames))
       (run-at-time "0.1 sec" nil (lambda ()
-                                  (modify-all-frames-parameters '((width . 119) (height . 83))))))))
+                                  (modify-all-frames-parameters '((width . 238) (height . 90))))))))
 
 (defun define-last-sexp-eval-as-previous-sexp ()
   (interactive)
@@ -418,6 +440,14 @@ before packages are loaded. If you are unsure, you should try in setting them in
 (defun sentence-at-point ()
   (interactive)
   (message (thing-at-point 'sentence 'no-properties)))
+
+(defun line-at-point ()
+  (interactive)
+  (message (thing-at-point 'line 'no-properties)))
+
+(defun defun-at-point ()
+  (interactive)
+  (message (thing-at-point 'defun 'no-properties)))
 
 (defun skip-whitespace ()
   (skip-chars-forward " \t\n"))
@@ -509,6 +539,100 @@ before packages are loaded. If you are unsure, you should try in setting them in
     (dotimes (var prefix)
       (join-line 1))))
 
+(defun sp-sexp-opening-brace ()
+  (save-excursion
+    (sp-end-of-sexp)
+    (evil-jump-item)
+    (point)))
+
+(defun sp-sexp-closing-brace ()
+  (save-excursion
+    (paxedit-backward-up 1)
+    (evil-jump-item)
+    (point)))
+
+(defvar sp-op-transient-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "b") 'sp-forward-barf-sexp-and-move-point)
+    (define-key map (kbd "s") 'sp-forward-slurp-sexp-and-move-point)
+    (define-key map (kbd "B") 'sp-backward-barf-sexp-and-move-point)
+    (define-key map (kbd "S") 'sp-backward-slurp-sexp-and-move-point)
+    map))
+
+(defun num-leading-spaces (line)
+  (length (seq-take-while (lambda (c) (= c ?\s)) line)))
+
+(defun num-leading-braces (line)
+  (let ((remainder (substring line (num-leading-spaces line))))
+    (length (seq-take-while (lambda (c) (memq c '(?\( ?\{ ?\[))) remainder))))
+
+(defun get-line (line)
+  (save-excursion
+    (goto-line line)
+    (thing-at-point 'line 'no-properties)))
+
+(defun sp-forward-op-sexp-and-move-point (f &optional n)
+  (interactive "p")
+  (let ((open (sp-sexp-opening-brace)))
+    (funcall f n)
+    (goto-char open)
+    (evil-jump-item)
+    (set-transient-map sp-op-transient-map)))
+
+(defun sp-sexp-backward-empty-wrapper? ()
+  (string=
+   (format "(%s)"
+     (save-excursion (paxedit-backward-up 1)
+       (thing-at-point 'sexp 'no-properties)))
+   (save-excursion
+     (paxedit-backward-up 2)
+     (thing-at-point 'sexp 'no-properties))))
+
+(defun sp-backward-op-sexp-and-move-point (slurp? &optional n)
+  (interactive "p")
+  (let* ((f (if slurp? 'sp-backward-slurp-sexp 'sp-backward-barf-sexp))
+         (opening-line (line-number-at-pos (sp-sexp-opening-brace)))
+         (closing (sp-sexp-closing-brace))
+         (closing-line (line-number-at-pos closing))
+         (closing-line-str (get-line closing-line))
+         (indent (num-leading-spaces closing-line-str))
+         (closing-brace-count (num-leading-braces closing-line-str))
+         (column (save-excursion (goto-char closing) (current-column))))
+    (funcall f n)
+    (let* ((closing-line-str (get-line closing-line))
+           (new-indent (num-leading-spaces closing-line-str))
+           (new-closing-brace-count (num-leading-braces closing-line-str))
+           (indentation-change (- new-indent indent))
+           (brace-change (- new-closing-brace-count closing-brace-count))
+           (adjustment
+            (cond ((= closing-line opening-line) 0)
+                  (t (+ indentation-change brace-change)))))
+      (with-no-warnings (goto-line closing-line))
+      (evil-beginning-of-line)
+      (evil-forward-char (+ column adjustment))
+      (sp-beginning-of-sexp)
+      (if (and (not slurp?) (looking-at "[])}]"))
+        (sp-unwrap-sexp)
+        (when (and slurp? (sp-sexp-backward-empty-wrapper?))
+          (sp-backward-unwrap-sexp))
+        (set-transient-map sp-op-transient-map)))))
+
+(defun sp-forward-barf-sexp-and-move-point (&optional n)
+  (interactive "p")
+  (sp-forward-op-sexp-and-move-point 'sp-forward-barf-sexp n))
+
+(defun sp-forward-slurp-sexp-and-move-point (&optional n)
+  (interactive "p")
+  (sp-forward-op-sexp-and-move-point 'sp-forward-slurp-sexp n))
+
+(defun sp-backward-barf-sexp-and-move-point (&optional n)
+  (interactive "p")
+  (sp-backward-op-sexp-and-move-point nil n))
+
+(defun sp-backward-slurp-sexp-and-move-point (&optional n)
+  (interactive "p")
+  (sp-backward-op-sexp-and-move-point t n))
+
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
@@ -516,6 +640,7 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+  (require 'evil-surround)
   (add-to-list 'auto-mode-alist '("\\.fst\\'" . fstar-mode))
   ;; use non-spaced pairs when surrounding with an opening brace
   (evil-add-to-alist
@@ -526,39 +651,95 @@ you should place your code here."
    ?\) '("( " . " )")
    ?\] '("[ " . " ]")
    ?\} '("{ " . " }"))
+
   (if nil (with-eval-after-load 'clojure-mode
-     (dolist (c (string-to-list ":_-?!#*"))
-       (modify-syntax-entry c "w" clojure-mode-syntax-table ))))
+            (dolist (c (string-to-list ":_-?!#*"))
+              (modify-syntax-entry c "w" clojure-mode-syntax-table))))
+
+  (if nil
+      (add-hook 'clojure-mode-hook #'(lambda ()
+                                       (modify-syntax-entry ?\: "w")
+                                       (modify-syntax-entry ?\_ "w")
+                                       (modify-syntax-entry ?\@ "w")
+                                       ;;(modify-syntax-entry ?\" "w")
+                                       ;;(modify-syntax-entry ?\- "w")
+                                       (modify-syntax-entry ?\? "w")
+                                       (modify-syntax-entry ?\! "w")
+                                       (modify-syntax-entry ?\# "w")
+                                       (modify-syntax-entry ?\* "w"))))
+
   (define-key evil-normal-state-map (kbd "r") 'brace-replace)
   (define-key evil-normal-state-map (kbd "K") 'join-to-previous)
-  (setq-default js2-basic-offset 2)
-  (setq-default js-indent-level 2)
-  (setq projectile-git-submodule-command nil)
-  (setq web-mode-markup-indent-offset 2)
-  (setq projectile-indexing-method 'alien)
-  (setq shell-file-name "/bin/sh")
-  ;(add-hook 'after-save-hook 'clojure-maybe-compile-and-load-file)
+  (define-key evil-normal-state-map (kbd "gg") 'beginning-of-buffer)
+
+  (setq-default
+    js2-basic-offset 2
+    js-indent-level 2
+    beacon-blink-when-point-moves-vertically 1
+    beacon-blink-when-window-scrolls t
+    beacon-blink-when-window-changes t
+    beacon-blink-when-buffer-changes t
+    beacon-blink-when-focused t
+    beacon-dont-blink-commands '()
+    beacon-color "#d4f931"
+    web-mode-markup-indent-offset 2
+    projectile-git-submodule-command nil
+    projectile-indexing-method 'hybrid
+    shell-file-name "/bin/sh"
+    nrepl-use-ssh-fallback-for-remote-hosts t)
+
+  (beacon-mode 1)
+
   (add-hook 'prog-mode-hook #'spacemacs-whitespace-cleanup-mode)
-  (setq ensime-startup-notification nil)
-  (setq ensime-startup-snapshot-notification nil)
-  (setq nrepl-use-ssh-fallback-for-remote-hosts t)
 
   (customize-set-variable 'helm-ff-lynx-style-map t)
 
   ; paxedit bindings
   (define-key evil-motion-state-map (kbd "M-<right>") 'paxedit-transpose-forward)
+  (define-key evil-motion-state-map (kbd "M-[ 3 C") 'paxedit-transpose-forward)
+
   (define-key evil-motion-state-map (kbd "M-<left>") 'paxedit-transpose-backward)
+  (define-key evil-motion-state-map (kbd "M-[ 3 D") 'paxedit-transpose-backward)
+
   (define-key evil-motion-state-map (kbd "M-<up>") 'paxedit-backward-up)
+  (define-key evil-motion-state-map (kbd "M-[ 3 A") 'paxedit-backward-up)
+
   (define-key evil-motion-state-map (kbd "M-<down>") 'paxedit-backward-end)
-  (define-key evil-motion-state-map (kbd "M-<backspace>") 'paxedit-backward-kill)
+  (define-key evil-motion-state-map (kbd "M-[ 3 B") 'paxedit-backward-end)
+
   (define-key evil-motion-state-map (kbd "<backspace>") 'paxedit-delete)
+  (define-key evil-motion-state-map (kbd "M-<backspace>") 'paxedit-backward-kill)
   (define-key evil-motion-state-map (kbd "C-c C-k") 'paxedit-symbol-kill)
+
+  (require 'evil-lisp-state)
   (define-key evil-lisp-state-map (kbd "K") 'paxedit-kill)
   (define-key evil-lisp-state-map (kbd "m") 'paxedit-compress)
   (define-key evil-lisp-state-map (kbd "f") 'paxedit-dissolve)
+  (define-key evil-lisp-state-map (kbd "b") 'sp-forward-barf-sexp-and-move-point)
+  (define-key evil-lisp-state-map (kbd "s") 'sp-forward-slurp-sexp-and-move-point)
+  (define-key evil-lisp-state-map (kbd "B") 'sp-backward-barf-sexp-and-move-point)
+  (define-key evil-lisp-state-map (kbd "S") 'sp-backward-slurp-sexp-and-move-point)
 
-  ; enable company globally
+  ;; enable company globally
   (global-company-mode)
+  (setq company-idle-delay 0.1)
+  (setq company-minimum-prefix-length 1)
+
+  ;; enable flycheck globally
+  (global-flycheck-mode)
+
+  (with-eval-after-load 'company
+    ;; disable inline previews
+    (delq 'company-preview-if-just-one-frontend company-frontends))
+
+  (add-hook 'prog-mode-hook 'copilot-mode)
+  (define-key evil-insert-state-map (kbd "M-<right>") 'copilot-accept-completion-by-line)
+  (define-key evil-insert-state-map (kbd "M-<return>") 'copilot-accept-completion)
+  (define-key evil-insert-state-map (kbd "M-<tab>") 'copilot-next-completion)
+
+  (add-hook 'c-mode-hook 'evil-tree-edit-mode)
+  (add-hook 'java-mode-hook 'evil-tree-edit-mode)
+  (add-hook 'python-mode-hook 'evil-tree-edit-mode)
 
   (use-package clojure-mode
                :ensure t
@@ -575,4 +756,50 @@ you should place your code here."
 
   (setup-frames nil)
 
-  )
+  (unless window-system
+    (setq mouse-wheel-follow-mouse 't)
+    (global-set-key (kbd "<mouse-4>") 'scroll-down-line)
+    (global-set-key (kbd "<mouse-5>") 'scroll-up-line))
+
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize))
+
+  (smartparens-global-mode 1)
+
+  (doom-modeline-mode 1)
+)
+
+(defun dotspacemacs/emacs-custom-settings ()
+  "Emacs custom settings.
+This is an auto-generated function, do not modify its content directly, use
+Emacs customize menu instead.
+This function is called at the very end of Spacemacs initialization."
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(evil-want-Y-yank-to-eol nil)
+ '(package-selected-packages
+   '(evil-tree-edit tree-edit reazon beacon undo-tree spinner queue flycheck-rust flycheck-pos-tip flycheck-ledger flycheck-haskell flycheck-clj-kondo parseedn parseclj a lv transient powerline org-category-capture alert log4e gntp org-plus-contrib skewer-mode simple-httpd json-snatcher json-reformat js2-mode parent-mode projectile request haml-mode gitignore-mode company-quickhelp flycheck quick-peek pos-tip flx magit magit-popup git-commit with-editor smartparens iedit anzu evil goto-chg sbt-mode web-completion-data dash-functional tern restclient know-your-http-well go-mode ghc haskell-mode company hydra inflections edn multiple-cursors paredit peg eval-sexp-fu highlight cider sesman pkg-info clojure-mode epl markdown-mode rust-mode bind-map bind-key yasnippet packed anaconda-mode pythonic helm avy helm-core async auto-complete popup f s dash cider-spy csv-mode yapfify yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toml-mode toc-org tagedit sql-indent spaceline smeargle slim-mode shell-pop scss-mode sass-mode reveal-in-osx-finder restclient-helm restart-emacs rainbow-delimiters racer pyvenv pytest pyenv-mode py-isort pug-mode popwin pip-requirements persp-mode pcre2el pbcopy paxedit paradox osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro org-mime org-download org-bullets open-junk-file ob-restclient ob-http noflet neotree multi-term move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint less-css-mode ledger-mode launchctl json-mode js2-refactor js-doc intero indent-guide hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-hoogle helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haskell-snippets google-translate golden-ratio go-guru go-eldoc gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy fstar-mode flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump diminish cython-mode company-web company-tern company-statistics company-restclient company-go company-ghci company-ghc company-cabal company-anaconda column-enforce-mode coffee-mode cmm-mode clojure-snippets clj-refactor clean-aindent-mode cider-eval-sexp-fu cargo auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(evil-want-Y-yank-to-eol nil)
+ '(package-selected-packages
+   '(beacon undo-tree spinner queue flycheck-rust flycheck-pos-tip flycheck-ledger flycheck-haskell flycheck-clj-kondo parseedn parseclj a lv transient powerline org-category-capture alert log4e gntp org-plus-contrib skewer-mode simple-httpd json-snatcher json-reformat js2-mode parent-mode projectile request haml-mode gitignore-mode company-quickhelp flycheck quick-peek pos-tip flx magit magit-popup git-commit with-editor smartparens iedit anzu evil goto-chg sbt-mode web-completion-data dash-functional tern restclient know-your-http-well go-mode ghc haskell-mode company hydra inflections edn multiple-cursors paredit peg eval-sexp-fu highlight cider sesman pkg-info clojure-mode epl markdown-mode rust-mode bind-map bind-key yasnippet packed anaconda-mode pythonic helm avy helm-core async auto-complete popup f s dash cider-spy csv-mode yapfify yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toml-mode toc-org tagedit sql-indent spaceline smeargle slim-mode shell-pop scss-mode sass-mode reveal-in-osx-finder restclient-helm restart-emacs rainbow-delimiters racer pyvenv pytest pyenv-mode py-isort pug-mode popwin pip-requirements persp-mode pcre2el pbcopy paxedit paradox osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro org-mime org-download org-bullets open-junk-file ob-restclient ob-http noflet neotree multi-term move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint less-css-mode ledger-mode launchctl json-mode js2-refactor js-doc intero indent-guide hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-hoogle helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haskell-snippets google-translate golden-ratio go-guru go-eldoc gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy fstar-mode flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump diminish cython-mode company-web company-tern company-statistics company-restclient company-go company-ghci company-ghc company-cabal company-anaconda column-enforce-mode coffee-mode cmm-mode clojure-snippets clj-refactor clean-aindent-mode cider-eval-sexp-fu cargo auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
