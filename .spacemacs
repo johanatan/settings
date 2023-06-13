@@ -1,4 +1,4 @@
-;; -*- mode: emacs-lisp -*-
+;; -*- mode: eacs-lisp -*-
 ;; This file is loaded by Spacemacs at startup.
 ;; It must be stored in your home directory.
 
@@ -98,6 +98,7 @@ values."
                                       paxedit
                                       tree-edit
                                       evil-tree-edit
+                                      flycheck-clj-kondo
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -370,6 +371,9 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
+
+  (setq custom-file "~/.spacemacs.d/customize.el")
+
   )
 
 (defun clojure-maybe-compile-and-load-file ()
@@ -679,6 +683,7 @@ you should place your code here."
     beacon-dont-blink-commands '()
     beacon-color "#d4f931"
     web-mode-markup-indent-offset 2
+    projectile-git-submodule-command nil
     projectile-indexing-method 'hybrid
     shell-file-name "/bin/sh"
     nrepl-use-ssh-fallback-for-remote-hosts t)
@@ -735,6 +740,14 @@ you should place your code here."
   (add-hook 'c-mode-hook 'evil-tree-edit-mode)
   (add-hook 'java-mode-hook 'evil-tree-edit-mode)
   (add-hook 'python-mode-hook 'evil-tree-edit-mode)
+
+  (use-package clojure-mode
+               :ensure t
+               :config
+               (require 'flycheck-clj-kondo))
+
+  ; enable flycheck globally
+  (global-flycheck-mode)
 
   (add-to-list 'after-make-frame-functions #'setup-frames)
 
