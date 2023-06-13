@@ -41,7 +41,6 @@ values."
    '(python
      octave
      csv
-     ;; python
      haskell
      yaml
      sql
