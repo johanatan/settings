@@ -12,3 +12,5 @@ fi
 source /opt/homebrew/share/antigen/antigen.zsh
 antigen bundle zsh-users/zsh-completions
 antigen apply
+
+bindkey -e
