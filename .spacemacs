@@ -539,6 +539,16 @@ before packages are loaded. If you are unsure, you should try in setting them in
     (dotimes (var prefix)
       (join-line 1))))
 
+(defun evil-beginning-of-file ()
+  (interactive)
+  (evil-beginning-of-line)
+  (evil-goto-first-line))
+
+(defun evil-end-of-file ()
+  (interactive)
+  (evil-goto-line)
+  (evil-end-of-line))
+
 (defun sp-sexp-opening-brace ()
   (save-excursion
     (sp-end-of-sexp)
@@ -682,6 +692,7 @@ you should place your code here."
     beacon-blink-when-focused t
     beacon-dont-blink-commands '()
     beacon-color "#d4f931"
+    copilot-node-executable "/Users/jleonard/.nvm/versions/node/v20.3.0/bin/node"
     web-mode-markup-indent-offset 2
     projectile-git-submodule-command nil
     projectile-indexing-method 'hybrid
@@ -764,8 +775,8 @@ you should place your code here."
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize))
 
+  (add-hook 'hy-mode-hook 'smartparens-mode)
   (smartparens-global-mode 1)
-
   (doom-modeline-mode 1)
 )
 
