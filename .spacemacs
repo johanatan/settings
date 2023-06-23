@@ -154,6 +154,8 @@ values."
    dotspacemacs-editing-style 'vim
    ;; If non nil output loading progress in `*Messages*' buffer. (default nil)
    dotspacemacs-verbose-loading nil
+   ;; Disable scroll bar while scrolling
+   dotspacemacs-scroll-bar-while-scrolling nil
    ;; Specify the startup banner. Default value is `official', it displays
    ;; the official spacemacs logo. An integer value is the index of text
    ;; banner, `random' chooses a random text banner in `core/banners'
@@ -384,18 +386,18 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (when (window-system)
     (let* ((num-displays (length (display-monitor-attributes-list)))
           (top (if (= 1 num-displays) 0 -1415))
-          (x-offset (if (= 1 num-displays) 603 1680))
+          (x-offset (if (= 1 num-displays) 603 1560))
           (frames (frame-list))
           (set-pos (lambda (frame idx)
                      (let ((params `((left + ,(+ (- (* idx (+ 7 (window-pixel-width)))) x-offset))
-                                     (top + ,top)
+                                     (top + top)
                                      (width . 238)
-                                     (height . 90))))
+                                     (height . 120))))
                        (modify-frame-parameters frame params)))))
       (-map-indexed (lambda (index frame)
                       (funcall set-pos frame index)) (reverse frames))
       (run-at-time "0.1 sec" nil (lambda ()
-                                  (modify-all-frames-parameters '((width . 238) (height . 90))))))))
+                                  (modify-all-frames-parameters '((width . 238) (height . 120))))))))
 
 (defun define-last-sexp-eval-as-previous-sexp ()
   (interactive)
