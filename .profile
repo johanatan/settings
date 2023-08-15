@@ -14,7 +14,7 @@ alias ccat="pygmentize -O bg=dark"
 alias gphm="git push heroku master"
 alias gpfhm="git push -f heroku master"
 alias cat='bat'
-alias canary='/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary --user-data-dir="$HOME/Library/Application Support/Google/Chrome"'
+alias canary='/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary --disable-web-security --user-data-dir="$HOME/Library/Application Support/Google/Chrome-Canary"'
 alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --disable-web-security --user-data-dir="$HOME/Library/Application Support/Google/Chrome-Canary"'
 alias gbd='git branch | grep -v master | grep -v \* | xargs git branch -D'
 alias figpid="ps aux | grep java | grep figwheel.main |  tr -s ' ' | cut -d ' ' -f 2 | head -n 1"
