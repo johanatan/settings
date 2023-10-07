@@ -49,7 +49,6 @@ values."
      osx
      javascript
      (clojure :variables
-              clojure-enable-sayid t
               clojure-enable-clj-refactor t
               clojure-enable-linters 'clj-kondo)
      ;; ----------------------------------------------------------------
@@ -241,7 +240,7 @@ values."
    dotspacemacs-display-default-layout nil
    ;; If non nil then the last auto saved layouts are resume automatically upon
    ;; start. (default nil)
-   dotspacemacs-auto-resume-layouts nil
+   dotspacemacs-auto-resume-layouts t
    ;; Size (in MB) above which spacemacs will prompt to open the large file
    ;; literally to avoid performance issues. Opening a file literally means that
    ;; no major mode or minor modes are active. (default is 1)
@@ -384,18 +383,18 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (when (window-system)
     (let* ((num-displays (length (display-monitor-attributes-list)))
           (top (if (= 1 num-displays) 0 -1415))
-          (x-offset (if (= 1 num-displays) 603 1680))
+          (x-offset (if (= 1 num-displays) 473 1559))
           (frames (frame-list))
           (set-pos (lambda (frame idx)
-                     (let ((params `((left + ,(+ (- (* idx (+ 7 (window-pixel-width)))) x-offset))
+                     (let ((params `((left + ,(+ (- (* idx (+ 4 (window-pixel-width)))) x-offset))
                                      (top + ,top)
                                      (width . 238)
-                                     (height . 90))))
+                                     (height . 123))))
                        (modify-frame-parameters frame params)))))
       (-map-indexed (lambda (index frame)
                       (funcall set-pos frame index)) (reverse frames))
       (run-at-time "0.1 sec" nil (lambda ()
-                                  (modify-all-frames-parameters '((width . 238) (height . 90))))))))
+                                  (modify-all-frames-parameters '((width . 238) (height . 123))))))))
 
 (defun define-last-sexp-eval-as-previous-sexp ()
   (interactive)
@@ -652,15 +651,17 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (require 'evil-surround)
   (add-to-list 'auto-mode-alist '("\\.fst\\'" . fstar-mode))
+
   ;; use non-spaced pairs when surrounding with an opening brace
-  (evil-add-to-alist
-   'evil-surround-pairs-alist
-   ?\( '("(" . ")")
-   ?\[ '("[" . "]")
-   ?\{ '("{" . "}")
-   ?\) '("( " . " )")
-   ?\] '("[ " . " ]")
-   ?\} '("{ " . " }"))
+  (if nil
+      (evil-add-to-alist
+       'evil-surround-pairs-alist
+       ?\( '("(" . ")")
+       ?\[ '("[" . "]")
+       ?\{ '("{" . "}")
+       ?\) '("( " . " )")
+       ?\] '("[ " . " ]")
+       ?\} '("{ " . " }")))
 
   (if nil (with-eval-after-load 'clojure-mode
             (dolist (c (string-to-list ":_-?!#*"))
@@ -692,7 +693,7 @@ you should place your code here."
     beacon-blink-when-focused t
     beacon-dont-blink-commands '()
     beacon-color "#d4f931"
-    copilot-node-executable "/Users/jleonard/.nvm/versions/node/v20.3.0/bin/node"
+    copilot-node-executable "/Users/jonathan/.nvm/versions/node/v20.6.0/bin/node"
     web-mode-markup-indent-offset 2
     projectile-git-submodule-command nil
     projectile-indexing-method 'hybrid
@@ -760,12 +761,8 @@ you should place your code here."
   ; enable flycheck globally
   (global-flycheck-mode)
 
-  (add-to-list 'after-make-frame-functions #'setup-frames)
-
   (defadvice projectile-project-root (around ignore-remote first activate)
     (unless (file-remote-p default-directory) ad-do-it))
-
-  (setup-frames nil)
 
   (unless window-system
     (setq mouse-wheel-follow-mouse 't)

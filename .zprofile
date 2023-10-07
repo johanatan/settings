@@ -31,11 +31,12 @@ if [ -f "/usr/local/opt/bash-git-prompt/share/gitprompt.sh" ]; then
 fi
 
 export NVM_DIR="$HOME/.nvm"
-[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 
 # Source chtf
 if [[ -f /usr/local/share/chtf/chtf.sh ]]; then
     source "/usr/local/share/chtf/chtf.sh"
 fi
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+eval "$(/usr/local/bin/brew shellenv)"
