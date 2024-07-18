@@ -775,6 +775,7 @@ you should place your code here."
   (add-hook 'hy-mode-hook 'smartparens-mode)
   (smartparens-global-mode 1)
   (doom-modeline-mode 1)
+
 )
 
 (defun dotspacemacs/emacs-custom-settings ()

@@ -11,6 +11,8 @@ export PATH=$HOME/activator:$PATH
 export PATH=$HOME/Library/Python/2.7/bin:$PATH
 export PATH=$HOME/Library/Python/3.10/bin:$PATH
 export PATH=$HOME/.cargo/bin:$PATH
+export PATH=/usr/local/Cellar/emacs-mac/emacs-29.1-mac-10.0/bin/:$PATH
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH=$PATH:$HOME/.rvm/bin
+. "$HOME/.cargo/env"
