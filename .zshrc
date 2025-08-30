@@ -30,5 +30,5 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-source ~/.conda-auto-env.sh
+[[ -r ~/.conda-auto-env.sh ]] && source ~/.conda-auto-env.sh
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
