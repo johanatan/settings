@@ -19,6 +19,7 @@ alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --d
 alias gbd='git branch | grep -v master | grep -v \* | xargs git branch -D'
 alias figpid="ps aux | grep java | grep figwheel.main |  tr -s ' ' | cut -d ' ' -f 2 | head -n 1"
 alias killfig="sudo kill -9 $(figpid)"
+alias tma='tmux attach -t'
 
 HISTFILE=~/.zsh_history
 setopt hist_ignore_space
