@@ -16,3 +16,6 @@ export PATH=/usr/local/Cellar/emacs-mac/emacs-29.1-mac-10.0/bin/:$PATH
 export PATH=$PATH:$HOME/.rvm/bin:$PATH
 . "$HOME/.cargo/env"
 
+# Claude Code local install (fallback if not globally installed)
+export PATH="$PATH:$HOME/.claude/local"
+

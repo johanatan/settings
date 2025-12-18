@@ -20,7 +20,6 @@ alias gbd='git branch | grep -v master | grep -v \* | xargs git branch -D'
 alias figpid="ps aux | grep java | grep figwheel.main |  tr -s ' ' | cut -d ' ' -f 2 | head -n 1"
 alias killfig="sudo kill -9 $(figpid)"
 alias tma='tmux attach -t'
-command -v claude >/dev/null 2>&1 || alias claude="~/.claude/local/claude"
 
 HISTFILE=~/.zsh_history
 setopt hist_ignore_space
