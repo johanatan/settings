@@ -17,5 +17,5 @@ export PATH=$PATH:$HOME/.rvm/bin:$PATH
 . "$HOME/.cargo/env"
 
 # Claude Code local install (fallback if not globally installed)
-export PATH="$PATH:$HOME/.claude/local"
+export PATH="$PATH:$HOME/.local/bin"
 
