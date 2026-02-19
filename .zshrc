@@ -32,8 +32,3 @@ unset __conda_setup
 
 [[ -r ~/.conda-auto-env.sh ]] && source ~/.conda-auto-env.sh
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
-
-# nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
